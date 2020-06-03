@@ -17,7 +17,8 @@
 
 include(add_sources)
 
-set(PRAAT_SUBDIRECTORIES external/gsl
+set(PRAAT_SUBDIRECTORIES external/clapack
+                         external/gsl
                          external/glpk
                          external/mp3
                          external/flac
@@ -34,8 +35,7 @@ set(PRAAT_SUBDIRECTORIES external/gsl
                          EEG
                          gram
                          FFNet
-                         artsynth
-                         contrib/ola)
+                         artsynth)
 
 set(PRAAT_INCLUDE_DIRS ${PRAAT_SUBDIRECTORIES})
 
@@ -53,18 +53,16 @@ if (UNIX)
 	endif()
 	
 	set(PRAAT_DEFINITIONS ${PRAAT_DEFINITIONS} UNIX)
-	set(PRAAT_DEFINITIONS_PRIVATE ${PRAAT_DEFINITIONS_PRIVATE} PLATFORM_POSIX HAVE_MKSTEMP) # eSpeak
+	set(PRAAT_DEFINITIONS_PRIVATE ${PRAAT_DEFINITIONS_PRIVATE} PLATFORM_POSIX) # eSpeak
 	
 	if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 		set(PRAAT_DEFINITIONS ${PRAAT_DEFINITIONS} linux)
 	endif()
 elseif (WIN32)
-	set(PRAAT_DEFINITIONS_PRIVATE ${PRAAT_DEFINITIONS_PRIVATE} _CRT_SECURE_NO_WARNINGS UNICODE) # Windows no "safe alternatives" warning, and Windows unicode API by default
 	set(PRAAT_DEFINITIONS_PRIVATE ${PRAAT_DEFINITIONS_PRIVATE} FLAC__NO_DLL) # flac
 	set(PRAAT_DEFINITIONS_PRIVATE ${PRAAT_DEFINITIONS_PRIVATE} PLATFORM_WINDOWS) # eSpeak
 	set(PRAAT_FLAGS ${PRAAT_FLAGS} /wd4068) # "warning C4068: unknown pragma": #pragma mark
 	set(PRAAT_FLAGS ${PRAAT_FLAGS} /EHs) # Some 'extern "C"' functions throw exceptions: make sure they're caught
-	set(PRAAT_FLAGS ${PRAAT_FLAGS} /utf-8) # Because Praat contains source files with unicode chars encoded as UTF-8, and because UTF-8 is not default enough for MSVC to read and compile these files correctly
 endif ()
 
 foreach(SUBDIR ${PRAAT_SUBDIRECTORIES})
@@ -77,4 +75,4 @@ target_compile_definitions(praat PUBLIC ${PRAAT_DEFINITIONS} PRIVATE ${PRAAT_DEF
 target_compile_options(praat PUBLIC ${PRAAT_FLAGS} PRIVATE ${PRAAT_FLAGS_PRIVATE})
 export(TARGETS praat FILE exports.cmake)
 
-set_target_properties(praat PROPERTIES C_STANDARD 99 CXX_STANDARD 14 CXX_STANDARD_REQUIRED TRUE)
+set_target_properties(praat PROPERTIES C_STANDARD 99 CXX_STANDARD 17 CXX_STANDARD_REQUIRED TRUE)
