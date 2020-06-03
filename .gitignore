@@ -33,3 +33,5 @@ __pycache__/
 
 .travis.yml
 .appveyor.yml
+
+.github
