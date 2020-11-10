@@ -57,12 +57,15 @@ if (UNIX)
 	
 	if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 		set(PRAAT_DEFINITIONS ${PRAAT_DEFINITIONS} linux)
-	endif()
+	# elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	# 	set(PRAAT_DEFINITIONS ${PRAAT_DEFINITIONS} macintosh)
+	endif ()
 elseif (WIN32)
 	set(PRAAT_DEFINITIONS_PRIVATE ${PRAAT_DEFINITIONS_PRIVATE} FLAC__NO_DLL) # flac
 	set(PRAAT_DEFINITIONS_PRIVATE ${PRAAT_DEFINITIONS_PRIVATE} PLATFORM_WINDOWS) # eSpeak
 	set(PRAAT_FLAGS ${PRAAT_FLAGS} /wd4068) # "warning C4068: unknown pragma": #pragma mark
 	set(PRAAT_FLAGS ${PRAAT_FLAGS} /EHs) # Some 'extern "C"' functions throw exceptions: make sure they're caught
+	set(PRAAT_FLAGS_PRIVATE ${PRAAT_FLAGS_PRIVATE} /wd4554) # "warning C4554: '<<': check operator precedence for possible error; use parentheses to clarify precedence"
 endif ()
 
 foreach(SUBDIR ${PRAAT_SUBDIRECTORIES})
