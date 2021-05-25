@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020  Yannick Jadoul
+ * Copyright (C) 2019-2021  Yannick Jadoul
  *
  * This file is part of Parselmouth.
  *
@@ -80,7 +80,8 @@ PRAAT_CLASS_BINDING(TextGrid) {
 	    "tgt_text_grid"_a);
 
 	def("to_tgt",
-	    toTgtTextGrid);
+	    toTgtTextGrid,
+	    py::kw_only(), "include_empty_intervals"_a = false);
 
 	def_static("from_tgt",
 	           fromTgtTextGrid,

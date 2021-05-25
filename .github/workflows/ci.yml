@@ -3,9 +3,14 @@ name: CI
 on:
   push:
     branches-ignore:
-      - docs*
+      - 'dependabot/**'
   pull_request:
   workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run the build with tmate debugging enabled'
+        required: false
+        default: false
 
 jobs:
   tests:
@@ -13,12 +18,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runs-on: ubuntu-latest
-            python: 2.7
-            arch: x64
-          - runs-on: ubuntu-latest
-            python: 3.5
-            arch: x64
           - runs-on: ubuntu-latest
             python: 3.6
             arch: x64
@@ -33,71 +32,88 @@ jobs:
           - runs-on: ubuntu-latest
             python: 3.9
             arch: x64
+          - runs-on: ubuntu-latest
+            python: pypy-3.6
+            arch: x64
+            run-praat-tests: true
+            name-extra: ' (with Praat tests)'
+          - runs-on: ubuntu-latest
+            python: pypy-3.7
+            arch: x64
 
           - runs-on: ubuntu-latest
-            python: 3.8
+            python: 3.9
             arch: x64
             gcc: 10
             name-extra: ' (GCC 10)'
           - runs-on: ubuntu-latest
-            python: 3.8
+            python: 3.9
             arch: x64
             clang: 9
             name-extra: ' (Clang 9)'
 
           - runs-on: ubuntu-latest
-            python: 2.7
+            python: 3.6
             arch: x64
             release: true
             name-extra: ' (Release)'
           - runs-on: ubuntu-latest
-            python: 3.8
+            python: 3.9
             arch: x64
             release: true
             name-extra: ' (Release)'
 
           - runs-on: macos-latest
-            python: 2.7
+            python: 3.6
             arch: x64
           - runs-on: macos-latest
-            python: 3.8
+            python: 3.9
             arch: x64
             run-praat-tests: true
             name-extra: ' (with Praat tests)'
           - runs-on: macos-latest
-            python: 3.8
+            python: 3.9
             arch: x64
             release: true
             name-extra: ' (Release)'
+          - runs-on: macos-latest
+            python: pypy-3.6
+            arch: x64
 
           - runs-on: windows-latest
-            python: 2.7
+            python: 3.6
             arch: x64
           - runs-on: windows-latest
-            python: 3.8
+            python: 3.9
             arch: x64
             run-praat-tests: true
             name-extra: ' (with Praat tests)'
           - runs-on: windows-latest
-            python: 2.7
+            python: 3.6
             arch: x86
             name-extra: ' (32-bit)'
           - runs-on: windows-latest
-            python: 3.8
+            python: 3.9
             arch: x86
             name-extra: ' (32-bit)'
           - runs-on: windows-latest
-            python: 3.8
+            python: 3.6
             arch: x64
             release: true
             name-extra: ' (Release)'
+          - runs-on: windows-latest
+            python: pypy-3.6
+            arch: x86
 
     name: Python ${{ matrix.python }}${{ matrix.name-extra }} • ${{ matrix.runs-on }}
     runs-on: ${{ matrix.runs-on }}
+    if: startsWith(github.ref, 'refs/heads/docs') != true
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       - name: Setup Python ${{ matrix.python }}
         uses: actions/setup-python@v2
@@ -106,7 +122,13 @@ jobs:
           architecture: ${{ matrix.arch }}
 
       - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v1.4
+        uses: jwlawson/actions-setup-cmake@v1.9
+
+      - name: Install OpenBLAS on macOS for NumPy
+        if: runner.os == 'macOS' && startsWith(matrix.python, 'pypy')
+        run: |
+          brew install openblas
+          echo "OPENBLAS=$(brew --prefix openblas)" >> $GITHUB_ENV
 
       - name: Install requirements
         run: |
@@ -127,24 +149,6 @@ jobs:
           echo "CC=clang-${{ matrix.clang }}" >> $GITHUB_ENV
           echo "CXX=clang++-${{ matrix.clang }}" >> $GITHUB_ENV
 
-      - name: Select 32-bit Visual Studio
-        if: runner.os == 'Windows' && matrix.arch == 'x86'
-        shell: bash
-        run: |
-          echo "CMAKE_ARCH=-A Win32" >> $GITHUB_ENV
-
-      - name: Select Debug build
-        if: matrix.release != true
-        shell: bash
-        run: |
-          echo "CMAKE_BUILD_TYPE=Debug" >> $GITHUB_ENV
-
-      - name: Select Release build
-        if: matrix.release
-        shell: bash
-        run: |
-          echo "CMAKE_BUILD_TYPE=Release" >> $GITHUB_ENV
-
       - name: Setup pytest annotations
         run: |
           python -m pip install pytest-github-actions-annotate-failures
@@ -158,15 +162,66 @@ jobs:
       - name: Configure
         shell: bash
         run: |
-          cmake -S . -B build $CMAKE_ARCH -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DPYBIND11_FINDPYTHON=ON -DPython_EXECUTABLE="$(which python)"
+          CMAKE_ARCH="${{ (runner.os == 'Windows' && matrix.arch == 'x86') && '-A Win32' || '' }}"
+          CMAKE_BUILD_TYPE="${{ matrix.release && 'Release' || 'Debug' }}"
+          cmake -S . -B build $CMAKE_ARCH -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DPython_EXECUTABLE="$(which python)"
 
       - name: Compile
-        run: cmake --build build -j 2
+        run: |
+          cmake --build build -j 2
 
       - name: Select Praat tests to run
         if: matrix.run-praat-tests
+        shell: bash
         run: |
           echo "PYTEST_ADDOPTS=--run-praat-tests -v" >> $GITHUB_ENV
 
       - name: Run tests
-        run: cmake --build build --target tests
+        run: |
+          cmake --build build --target tests
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() && github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+        with:
+          limit-access-to-actor: true
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1.9
+
+      - name: Install requirements
+        run: |
+          pip install --user -r docs/requirements.txt
+          sudo apt install pandoc
+
+      - name: Configure
+        shell: bash
+        run: |
+          cmake -S . -B build -DPython_EXECUTABLE="$(which python)"
+
+      - name: Build
+        run: |
+          cmake --build build -j 2
+
+      - name: Build documentation
+        run: |
+          cmake --build build --target docs
+
+      - name: Check links
+        run: |
+          cmake --build build --target docs_linkcheck

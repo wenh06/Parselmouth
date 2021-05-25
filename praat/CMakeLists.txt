@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2020  Yannick Jadoul
+# Copyright (C) 2016-2021  Yannick Jadoul
 #
 # This file is part of Parselmouth.
 #
@@ -15,29 +15,37 @@
 # You should have received a copy of the GNU General Public License
 # along with Parselmouth.  If not, see <http://www.gnu.org/licenses/>
 
-include(add_sources)
+set(PRAAT_SUBDIRECTORIES
+	external/clapack
+	external/gsl
+	external/glpk
+	external/mp3
+	external/flac
+	external/portaudio
+	external/espeak
+	external/vorbis
+	external/opusfile
+	kar
+	melder
+	sys
+	dwsys
+	stat
+	fon
+	dwtools
+	LPC
+	EEG
+	gram
+	FFNet
+	artsynth
+)
 
-set(PRAAT_SUBDIRECTORIES external/clapack
-                         external/gsl
-                         external/glpk
-                         external/mp3
-                         external/flac
-                         external/portaudio
-                         external/espeak
-                         kar
-                         melder
-                         sys
-                         dwsys
-                         stat
-                         fon
-                         dwtools
-                         LPC
-                         EEG
-                         gram
-                         FFNet
-                         artsynth)
-
-set(PRAAT_INCLUDE_DIRS ${PRAAT_SUBDIRECTORIES})
+set(PRAAT_INCLUDE_DIRS
+	${PRAAT_SUBDIRECTORIES}
+	external/opusfile/opus
+	external/opusfile/opus/celt
+	external/opusfile/opus/silk
+	external/opusfile/opus/silk/float
+)
 
 set(PRAAT_FLAGS)
 set(PRAAT_FLAGS_PRIVATE)
@@ -68,14 +76,14 @@ elseif (WIN32)
 	set(PRAAT_FLAGS_PRIVATE ${PRAAT_FLAGS_PRIVATE} /wd4554) # "warning C4554: '<<': check operator precedence for possible error; use parentheses to clarify precedence"
 endif ()
 
+add_library(praat)
 foreach(SUBDIR ${PRAAT_SUBDIRECTORIES})
 	add_subdirectory(${SUBDIR})
 endforeach()
 
-add_library(praat ${SRC})
 target_include_directories(praat PUBLIC ${PRAAT_INCLUDE_DIRS})
 target_compile_definitions(praat PUBLIC ${PRAAT_DEFINITIONS} PRIVATE ${PRAAT_DEFINITIONS_PRIVATE})
 target_compile_options(praat PUBLIC ${PRAAT_FLAGS} PRIVATE ${PRAAT_FLAGS_PRIVATE})
-export(TARGETS praat FILE exports.cmake)
+target_link_libraries(praat PUBLIC fmt::fmt)
 
 set_target_properties(praat PROPERTIES C_STANDARD 99 CXX_STANDARD 17 CXX_STANDARD_REQUIRED TRUE)

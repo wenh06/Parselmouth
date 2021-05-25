@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2020  Yannick Jadoul
+# Copyright (C) 2018-2021  Yannick Jadoul
 #
 # This file is part of Parselmouth.
 #
@@ -37,7 +37,7 @@ def pytest_collection_modifyitems(config, items):
 		items[:] = [item for item in items if 'praat_test' not in item.keywords]
 
 
-class Resources(object):
+class Resources:
 	def __init__(self, base_path):
 		self.base_path = base_path
 	

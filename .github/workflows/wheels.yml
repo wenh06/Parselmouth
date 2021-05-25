@@ -15,19 +15,25 @@ jobs:
   sdist:
     name: Source distribution
     runs-on: ubuntu-latest
-    if: github.ref != 'refs/heads/docs'
+    if: startsWith(github.ref, 'refs/heads/docs') != true
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.8'
 
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1.9
+
       - name: Install requirements
-        run: pip install --user check-manifest twine
+        run: |
+          pip install --user check-manifest twine
 
       - name: Run check-manifest
         run: |
@@ -35,7 +41,7 @@ jobs:
 
       - name: Build sdist
         run: |
-          python setup.py sdist -d wheelhouse
+          python -m build --sdist --outdir wheelhouse
 
       - name: Install from sdist
         run: |
@@ -62,12 +68,15 @@ jobs:
             cibw-arch: manylinux_i686
           - runs-on: macos-latest
             cibw-arch: macosx_x86_64
+          - runs-on: macos-latest
+            cibw-arch: macosx_arm64
+          - runs-on: macos-latest
+            cibw-arch: macosx_universal2
           - runs-on: windows-latest
             cibw-arch: win_amd64
           - runs-on: windows-latest
             cibw-arch: win32
             python-arch: x86
-            cmake-arch: -A Win32
 
     name: Wheels • ${{ matrix.cibw-arch }}
     runs-on: ${{ matrix.runs-on }}
@@ -75,12 +84,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.8'
           architecture: ${{ matrix.python-arch }}
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1.9
 
       - name: Install requirements
         run: |
@@ -89,34 +103,37 @@ jobs:
       - name: Configure cibuildwheel
         shell: bash
         run: |
+          CMAKE_ARCH="${{ matrix.cibw-arch == 'win32' && '-A Win32' || '' }}"
+          CMAKE_OSX_ARCHITECTURES=${{ matrix.cibw-arch == 'macosx_x86_64' && 'x86_64' || matrix.cibw-arch == 'macosx_arm64' && 'arm64' || matrix.cibw-arch == 'macosx_universal2' && '"arm64;x86_64"' || '' }}
+          echo "CIBW_ARCHS_MACOS=x86_64 arm64 universal2" >> $GITHUB_ENV
           echo "CIBW_BUILD=*-${{ matrix.cibw-arch }}" >> $GITHUB_ENV
-          echo "CIBW_SKIP=pp*-*" >> $GITHUB_ENV
-          CIBW_ENVIRONMENT_COMMON="PARSELMOUTH_EXTRA_CMAKE_ARGS=\"-DPREBUILT_PRAAT_DIR=\$(python -c 'import os; print(os.getcwd().replace(os.path.sep, '/'))')/praat_build/praat\""
+          CIBW_ENVIRONMENT_COMMON="PARSELMOUTH_EXTRA_CMAKE_ARGS=\"-DPREBUILT_DEPENDENCIES=\$(python -c 'import os; print(os.getcwd().replace(os.path.sep, '/'))')/build_dependencies\" CMAKE_BUILD_PARALLEL_LEVEL=2"
           echo "CIBW_ENVIRONMENT=$CIBW_ENVIRONMENT_COMMON" >> $GITHUB_ENV
           echo "CIBW_ENVIRONMENT_LINUX=$CIBW_ENVIRONMENT_COMMON PIP_ONLY_BINARY='numpy'" >> $GITHUB_ENV
-          CIBW_BEFORE_ALL_COMMON="cmake -S . -B praat_build ${{ matrix.cmake-arch }} && cmake --build praat_build --target praat -j 2"
+          echo "CIBW_ENVIRONMENT_MACOS=$CIBW_ENVIRONMENT_COMMON MACOSX_DEPLOYMENT_TARGET=10.9 CMAKE_OSX_ARCHITECTURES=\"$CMAKE_OSX_ARCHITECTURES\"" >> $GITHUB_ENV
+          CIBW_BEFORE_ALL_COMMON="cmake -S . -B build_dependencies $CMAKE_ARCH && cmake --build build_dependencies --target praat -j 2"
           echo "CIBW_BEFORE_ALL=$CIBW_BEFORE_ALL_COMMON" >> $GITHUB_ENV
-          echo "CIBW_BEFORE_ALL_LINUX=(PY37_BIN=/opt/python/cp37-cp37m/bin && \$PY37_BIN/pip install cmake && ln -s \$PY37_BIN/cmake /usr/local/bin/cmake) && ( $CIBW_BEFORE_ALL_COMMON )" >> $GITHUB_ENV
+          echo "CIBW_BEFORE_ALL_LINUX=pip install cmake && ln -s \$(which cmake) /usr/local/bin/cmake && $CIBW_BEFORE_ALL_COMMON" >> $GITHUB_ENV
           echo "CIBW_BEFORE_ALL_WINDOWS=$CIBW_BEFORE_ALL_COMMON --config Release" >> $GITHUB_ENV
 
       - name: Only build ReadTheDocs wheel
-        if: github.ref == 'refs/heads/docs'
+        if: startsWith(github.ref, 'refs/heads/docs')
         shell: bash
         run: |
           echo "CIBW_BUILD=cp37-manylinux_x86_64" >> $GITHUB_ENV
 
       - name: Run cibuildwheel
-        if: github.ref != 'refs/heads/docs' || matrix.cibw-arch == 'manylinux_x86_64'
+        if: startsWith(github.ref, 'refs/heads/docs') != true || matrix.cibw-arch == 'manylinux_x86_64'
         run: |
           cibuildwheel
 
       - name: Check built wheels
-        if: github.ref != 'refs/heads/docs' || matrix.cibw-arch == 'manylinux_x86_64'
+        if: startsWith(github.ref, 'refs/heads/docs') != true || matrix.cibw-arch == 'manylinux_x86_64'
         run: |
           twine check wheelhouse/*
 
       - name: Upload built wheels
-        if: github.ref != 'refs/heads/docs'
+        if: startsWith(github.ref, 'refs/heads/docs') != true
         uses: actions/upload-artifact@v2
         with:
           name: wheels
@@ -166,7 +183,7 @@ jobs:
           echo "::set-output name=version::${GITHUB_REF##refs/tags/v}"
 
       - name: Upload sdist and wheels to release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@v1.8.6
         with:
           name: ${{ steps.get_version.outputs.version }}
           draft: true

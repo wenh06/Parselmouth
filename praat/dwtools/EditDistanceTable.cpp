@@ -220,7 +220,7 @@ integer EditCostsTable_getSourceIndex (EditCostsTable me, conststring32 symbol) 
 }
 
 void EditCostsTable_setInsertionCosts (EditCostsTable me, conststring32 targets_string, double cost) {
-	autoSTRVEC targets = newSTRVECtokenize (targets_string);
+	autoSTRVEC targets = splitByWhitespace_STRVEC (targets_string);
 	for (integer itarget = 1; itarget <= targets.size; itarget ++) {
 		integer irow = EditCostsTable_getTargetIndex (me, targets [itarget].get());
 		irow = ( irow > 0 ? irow : my numberOfRows - 1 );   // nomatch condition to penultimate row
@@ -229,7 +229,7 @@ void EditCostsTable_setInsertionCosts (EditCostsTable me, conststring32 targets_
 }
 
 void EditCostsTable_setDeletionCosts (EditCostsTable me, conststring32 sources_string, double cost) {
-	autoSTRVEC sources = newSTRVECtokenize (sources_string);
+	autoSTRVEC sources = splitByWhitespace_STRVEC (sources_string);
 	for (integer isource = 1; isource <= sources.size; isource ++) {
 		integer icol = EditCostsTable_getSourceIndex (me, sources [isource].get());
 		icol = ( icol > 0 ? icol : my numberOfColumns - 1 );   // nomatch condition to penultimate column
@@ -253,10 +253,10 @@ double EditCostsTable_getOthersCost (EditCostsTable me, int costType) {
 
 void EditCostsTable_setSubstitutionCosts (EditCostsTable me, conststring32 targets_string, conststring32 sources_string, double cost) {
 	try {
-		autoSTRVEC targets = newSTRVECtokenize (targets_string);
-		autoSTRVEC sources = newSTRVECtokenize (sources_string);
-		autoINTVEC targetIndex = newINTVECzero (my numberOfRows);   // note: this includes zero padding
-		autoINTVEC sourceIndex = newINTVECzero (my numberOfRows);   // note: this includes zero padding
+		autoSTRVEC targets = splitByWhitespace_STRVEC (targets_string);
+		autoSTRVEC sources = splitByWhitespace_STRVEC (sources_string);
+		autoINTVEC targetIndex = zero_INTVEC (my numberOfRows);   // note: this includes zero padding
+		autoINTVEC sourceIndex = zero_INTVEC (my numberOfRows);   // note: this includes zero padding
 		integer numberOfTargetSymbols = 0;
 		for (integer itarget = 1; itarget <= targets.size; itarget ++) {
 			const integer index = EditCostsTable_getTargetIndex (me, targets [itarget].get());
@@ -405,11 +405,10 @@ static void print4 (char *buffer, double value, int iformat, int width, int prec
 		else if (denominator > 1)
 			snprintf (buffer, 40, "%s/%s", Melder8_integer (numerator), Melder8_integer (denominator));
 		else
-			snprintf (buffer, 40, "%s", Melder8_double(value, 7));
+			fmt_snprintf (buffer, 40, "%.7g", value);
 	} else {
-		snprintf(buffer, 40, "%*s", width, Melder8_double(value, precision, ( iformat == 1 ? 'f' : iformat == 2 ? 'e' : 'g') ));
-		// snprintf (formatString, 40, "%%%d.%d%c", width, precision, ( iformat == 1 ? 'f' : ( iformat == 2 ? 'e' : 'g' ) ));
-		// snprintf (buffer, 40, formatString, value);
+		fmt_snprintf (formatString, 40, "%%%d.%d%c", width, precision, ( iformat == 1 ? 'f' : ( iformat == 2 ? 'e' : 'g' ) ));
+		fmt_snprintf (buffer, 40, formatString, value);
 	}
 }
 
@@ -445,7 +444,7 @@ void EditDistanceTable_draw (EditDistanceTable me, Graphics graphics, int iforma
 	const double lineSpacing = getLineSpacing (graphics);   // not earlier!
 	const double maxTextWidth = getMaxRowLabelWidth (me, graphics, rowmin, rowmax);
 	double y = 1.0 + 0.1 * lineSpacing;
-	autoBOOLMAT onPath = newBOOLMATzero (my numberOfRows, my numberOfColumns);
+	autoBOOLMAT onPath = zero_BOOLMAT (my numberOfRows, my numberOfColumns);
 	for (integer i = 1; i <= my warpingPath -> pathLength; i ++) {
 		const structPairOfInteger poi = my warpingPath -> path [i];
 		onPath [poi.y] [poi.x] = true;
@@ -537,8 +536,8 @@ void EditDistanceTable_findPath (EditDistanceTable me, autoTableOfReal *out_dire
 		 * Going in the vertical direction is a deletion, horizontal is insertion, diagonal is substitution
 		 */
 		const integer numberOfSources = my numberOfColumns - 1, numberOfTargets = my numberOfRows - 1;
-		autoINTMAT psi = newINTMATzero (my numberOfRows, my numberOfColumns);
-		autoMAT delta = newMATzero (my numberOfRows, my numberOfColumns);
+		autoINTMAT psi = zero_INTMAT (my numberOfRows, my numberOfColumns);
+		autoMAT delta = zero_MAT (my numberOfRows, my numberOfColumns);
 
 		for (integer icol = 2; icol <= my numberOfColumns; icol ++) {
 			delta [1] [icol] = delta [1] [icol - 1] + EditCostsTable_getDeletionCost (my editCostsTable.get(), my columnLabels [icol].get());

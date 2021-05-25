@@ -85,11 +85,7 @@ Thing_define (GraphicsScreen, Graphics) {
 	#elif cairo
 		#if gtk
 			GdkDisplay *d_display;
-			#if ALLOW_GDK_DRAWING
-				GdkDrawable *d_window;
-			#else
-				GdkWindow *d_window;
-			#endif
+			GdkWindow *d_window;
 		#endif
 		cairo_surface_t *d_cairoSurface;
 		cairo_t *d_cairoGraphicsContext;
@@ -137,8 +133,6 @@ Thing_define (GraphicsScreen, Graphics) {
 		override;
 	void v_arrowHead (double xDC, double yDC, double angle)
 		override;
-	void v_flushWs ()
-		override;
 	void v_clearWs ()
 		override;
 	void v_updateWs ()
@@ -147,7 +141,12 @@ Thing_define (GraphicsScreen, Graphics) {
 
 Thing_define (GraphicsPostscript, Graphics) {
 	FILE *d_file;
-	int (*d_printf) (void *stream, const char *format, ...);
+	// int (*d_printf) (void *stream, const char *format, ...);
+	int (*d_vprintf)(FILE *stream, const char *format, fmt::printf_args args);
+	template <typename... Args>
+	int d_printf(FILE *stream, const char *format, Args &&... args) {
+		return d_vprintf(stream, format, fmt::make_printf_args(args...));
+	}
 	int languageLevel;
 	int photocopyable, spotsDensity, spotsAngle;
 	bool loadedXipa, useSilipaPS, landscape, includeFonts;

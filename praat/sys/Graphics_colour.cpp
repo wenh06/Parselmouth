@@ -45,7 +45,7 @@ void _Graphics_setColour (Graphics graphics, MelderColour colour) {
 		#endif
 	} else if (graphics -> postScript) {
 		GraphicsPostscript me = static_cast <GraphicsPostscript> (graphics);
-		my d_printf (my d_file, "%s %s %s setrgbcolor\n", Melder8_double(colour. red, 6), Melder8_double(colour. green, 6), Melder8_double(colour. blue, 6));
+		my d_printf (my d_file, "%.6g %.6g %.6g setrgbcolor\n", colour. red, colour. green, colour. blue);
 	}
 }
 
@@ -81,7 +81,7 @@ void _Graphics_setGrey (Graphics graphics, double fgrey) {
 		#endif
 	} else if (graphics -> postScript) {
 		GraphicsPostscript me = static_cast <GraphicsPostscript> (graphics);
-		my d_printf (my d_file, "%s setgray\n", Melder8_double(fgrey, 6)); // my d_printf (my d_file, "%.6g setgray\n", fgrey);
+		my d_printf (my d_file, "%.6g setgray\n", fgrey);
 	}
 }
 
@@ -214,7 +214,7 @@ void Graphics_highlight2 (Graphics me, double x1WC, double x2WC, double y1WC, do
 void Graphics_xorOn (Graphics graphics, MelderColour colourOnWhiteBackground) {
 	if (graphics -> screen) {
 		GraphicsScreen me = static_cast <GraphicsScreen> (graphics);
-		if (graphics -> recording) {
+		if (my recording) {
 			op (XOR_ON, 3);
 			put (colourOnWhiteBackground. red);
 			put (colourOnWhiteBackground. green);
@@ -239,7 +239,7 @@ void Graphics_xorOn (Graphics graphics, MelderColour colourOnWhiteBackground) {
 void Graphics_xorOff (Graphics graphics) {
 	if (graphics -> screen) {
 		GraphicsScreen me = static_cast <GraphicsScreen> (graphics);
-		if (graphics -> recording) {
+		if (my recording) {
 			op (XOR_OFF, 0);
 		} else {
 			#if cairo

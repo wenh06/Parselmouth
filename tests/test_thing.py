@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2020  Yannick Jadoul
+# Copyright (C) 2019-2021  Yannick Jadoul
 #
 # This file is part of Parselmouth.
 #
@@ -18,8 +18,6 @@
 import pytest
 
 import re
-
-from builtins import str  # Python 2 compatibility
 
 
 def test_name(thing):

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020  Yannick Jadoul
+ * Copyright (C) 2017-2021  Yannick Jadoul
  *
  * This file is part of Parselmouth.
  *
@@ -17,4 +17,4 @@
  * along with Parselmouth.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#define PARSELMOUTH_VERSION 0.4.0.dev0
+#define PARSELMOUTH_VERSION 0.5.0.dev0

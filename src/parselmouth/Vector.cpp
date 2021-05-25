@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020  Yannick Jadoul
+ * Copyright (C) 2017-2021  Yannick Jadoul
  *
  * This file is part of Parselmouth.
  *
@@ -104,16 +104,6 @@ PRAAT_CLASS_BINDING(Vector) {
 	def("__truediv__",
 	    [](Vector self, double factor) { auto result = Data_copy(self); Vector_multiplyByScalar(result.get(), 1 / factor); return result; },
 	    "factor"_a, py::is_operator());
-
-#if PY_MAJOR_VERSION < 3
-	def("__idiv__",
-	    [](Vector self, double factor) { Vector_multiplyByScalar(self, 1 / factor); return self; },
-	    "factor"_a, py::is_operator());
-
-	def("__div__",
-	    [](Vector self, double factor) { auto result = Data_copy(self); Vector_multiplyByScalar(result.get(), 1 / factor); return result; },
-	    "factor"_a, py::is_operator());
-#endif
 
 	def("scale",
 	    args_cast<_, Positive<_>>(Vector_scale),

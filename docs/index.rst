@@ -11,10 +11,6 @@ Please note that Parselmouth is currently in premature state and in active devel
 
 Drop by our `Gitter chat room <https://gitter.im/PraatParselmouth/Lobby>`_ or post a message to our `Google discussion group <https://groups.google.com/d/forum/parselmouth>`_ if you have any question, remarks, or requests!
 
-.. warning::
-
-    The upcoming release of Parselmouth 0.4.0 will be the *last version* supporting Python 2. Python 2 has reached End Of Life on January 1, 2020, and is officially not supported anymore: see https://python3statement.org/. It is strongly suggested to `move to Python 3 <https://docs.python.org/3/howto/pyporting.html>`_, to be able to use new Parselmouth functionality after the 0.4.0 release.
-
 .. only:: html
 
     .. note::
@@ -34,7 +30,7 @@ Drop by our `Gitter chat room <https://gitter.im/PraatParselmouth/Lobby>`_ or po
 Citing Parselmouth
 ------------------
 
-A `manuscript introducing Parselmouth <https://ai.vub.ac.be/~yajadoul/jadoul_introducing-parselmouth_a-python-interface-to-praat.pdf>`_ (and `supplementary material <https://ai.vub.ac.be/~yajadoul/jadoul_introducing-parselmouth_a-python-interface-to-praat_supplementary-material.zip>`_) has been `published in the Journal of Phonetics <https://www.sciencedirect.com/science/article/pii/S0095447017301389>`_. Scientific work and publications can for now cite Parselmouth in the following way:
+A `manuscript introducing Parselmouth <https://ai.vub.ac.be/~yajadoul/jadoul_introducing-parselmouth_a-python-interface-to-praat.pdf>`_ (and `supplementary material <https://ai.vub.ac.be/~yajadoul/jadoul_introducing-parselmouth_a-python-interface-to-praat_supplementary-material.zip>`_) has been `published in the Journal of Phonetics <https://www.sciencedirect.com/science/article/abs/pii/S0095447017301389>`_. Scientific work and publications can for now cite Parselmouth in the following way:
 
     Jadoul, Y., Thompson, B., & de Boer, B. (2018). Introducing Parselmouth: A Python interface to Praat. *Journal of Phonetics*, *71*, 1-15. https://doi.org/10.1016/j.wocn.2018.07.001
 
@@ -50,17 +46,17 @@ A `manuscript introducing Parselmouth <https://ai.vub.ac.be/~yajadoul/jadoul_int
         doi = "https://doi.org/10.1016/j.wocn.2018.07.001"
     }
 
-Since Parselmouth exposes existing Praat functionality and algorithm implementations, we suggest also `citing Praat <http://www.fon.hum.uva.nl/praat/manual/FAQ__How_to_cite_Praat.html>`_ when using Parselmouth in scientific research:
+Since Parselmouth exposes existing Praat functionality and algorithm implementations, we suggest also `citing Praat <https://www.fon.hum.uva.nl/praat/manual/FAQ__How_to_cite_Praat.html>`_ when using Parselmouth in scientific research:
 
-    Boersma, P., & Weenink, D. (2018). Praat: doing phonetics by computer [Computer program]. Version 6.0.43, retrieved 8 September 2018 from http://www.praat.org/
+    Boersma, P., & Weenink, D. (2021). Praat: doing phonetics by computer [Computer program]. Version 6.1.38, retrieved 2 January 2021 from http://www.praat.org/
 
 .. code-block:: bibtex
 
     @misc{praat,
         author = "Paul Boersma and David Weenink",
         title = "{P}raat: doing phonetics by computer [{C}omputer program]",
-        howpublished = "Version 6.0.43, retrieved 8 September 2018 \url{http://www.praat.org/}",
-        year = "2018"
+        howpublished = "Version 6.1.38, retrieved 2 January 2021 \url{http://www.praat.org/}",
+        year = "2021"
     }
 
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2016-2020  Yannick Jadoul
+# Copyright (C) 2016-2021  Yannick Jadoul
 #
 # This file is part of Parselmouth.
 #
@@ -15,17 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Parselmouth.  If not, see <http://www.gnu.org/licenses/>
 
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.18)
 project(Parselmouth)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/res/cmake ${CMAKE_MODULE_PATH})
 
 if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
-endif ()
-
-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/installed CACHE STRING "Install path prefix, prepended onto install directories." FORCE)
 endif ()
 
 if (MSVC)
@@ -37,16 +33,33 @@ if (MSVC)
 	endif ()
 endif ()
 
-set(PYBIND11_CPP_STANDARD "") # We'll set it ourselves, in the subdirectory, because we want C++17
-add_subdirectory(pybind11)
-
-if (PREBUILT_PRAAT_DIR)
-	file(TO_CMAKE_PATH ${PREBUILT_PRAAT_DIR} PREBUILT_PRAAT_DIR_CMAKE)
-	include(${PREBUILT_PRAAT_DIR_CMAKE}/exports.cmake)
-	set(CMAKE_NO_SYSTEM_FROM_IMPORTED 1) # Get -I instead of -isystem, when importing an already-built praat lib
+if (PREBUILT_DEPENDENCIES)
+	file(TO_CMAKE_PATH ${PREBUILT_DEPENDENCIES} PREBUILT_DEPENDENCIES_DIR)
+	include(${PREBUILT_DEPENDENCIES_DIR}/dependency_exports.cmake)
 else ()
+	add_subdirectory(extern)
 	add_subdirectory(praat)
+	export(TARGETS praat fmt FILE dependency_exports.cmake)
 endif ()
+
+# Currently, scikit-build does not support FindPython.
+if(SKBUILD)
+	set(Python_EXECUTABLE "${PYTHON_EXECUTABLE}")
+	set(Python_INCLUDE_DIR "${PYTHON_INCLUDE_DIR}")
+	unset(PYTHON_EXECUTABLE)
+	unset(PYTHON_INCLUDE_DIR)
+	unset(PYTHON_LIBRARY)
+	unset(PYTHON_VERSION_STRING)
+endif()
+
+set(Python_FIND_IMPLEMENTATIONS CPython PyPy)
+find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
+add_subdirectory(pybind11)
 
 add_subdirectory(src)
 add_subdirectory(tests)
+add_subdirectory(docs)
+
+if(SKBUILD)
+	install(TARGETS parselmouth LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX})
+endif()

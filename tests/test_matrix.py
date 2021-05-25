@@ -1,4 +1,4 @@
-# Copyright (C) 2020  Yannick Jadoul
+# Copyright (C) 2020-2021  Yannick Jadoul
 #
 # This file is part of Parselmouth.
 #
@@ -14,8 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Parselmouth.  If not, see <http://www.gnu.org/licenses/>
-
-from __future__ import division  # Python 2 compatibility
 
 import pytest
 

@@ -1,11 +1,20 @@
 include *.md
 include LICENSE
 
+include MANIFEST.in
+include pyproject.toml
+include setup.cfg
+include setup.py
+
 include CMakeLists.txt
 include requirements.txt
 graft src
 graft pybind11
 graft praat
+
+include .gitmodules
+graft extern
+exclude extern/fmt/.git
 
 graft res
 

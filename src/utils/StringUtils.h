@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2020  Yannick Jadoul
+ * Copyright (C) 2016-2021  Yannick Jadoul
  *
  * This file is part of Parselmouth.
  *
@@ -25,11 +25,11 @@
 
 namespace parselmouth {
 
-bool startsWith(const std::u32string &string, const std::u32string &prefix) {
-	return prefix.length() <= string.length() && string.compare(0, prefix.length(), prefix) == 0;
+inline bool startsWith(std::u32string_view string, std::u32string_view prefix) {
+	return string.compare(0, prefix.length(), prefix) == 0;
 }
 
-bool endsWith(const std::u32string &string, const std::u32string &suffix) {
+inline bool endsWith(std::u32string_view string, std::u32string_view suffix) {
 	return suffix.length() <= string.length() && string.compare(string.length() - suffix.length(), std::u32string::npos, suffix) == 0;
 }
 

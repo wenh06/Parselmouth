@@ -1,6 +1,6 @@
 /* Transition.cpp
  *
- * Copyright (C) 1997-2012,2015-2019 Paul Boersma
+ * Copyright (C) 1997-2012,2015-2020 Paul Boersma
  *
  * This code is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,7 +67,7 @@ void Transition_init (Transition me, integer numberOfStates) {
 		Melder_throw (U"Cannot create empty matrix.");
 	my numberOfStates = numberOfStates;
 	my stateLabels = autoSTRVEC (numberOfStates);
-	my data = newMATzero (my numberOfStates, my numberOfStates);
+	my data = zero_MAT (my numberOfStates, my numberOfStates);
 }
 
 autoTransition Transition_create (integer numberOfStates) {
@@ -103,11 +103,10 @@ static void print4 (char *buffer, double value, int iformat, int width, int prec
 		else if (denominator > 1)
 			snprintf (buffer, 40, "%s/%s", Melder8_integer (numerator), Melder8_integer (denominator));
 		else
-			snprintf (buffer, 40, "%s", Melder8_double(value, 7));
+			fmt_snprintf (buffer, 40, "%.7g", value);
 	} else {
-		snprintf(buffer, 40, "%*s", width, Melder8_double(value, precision, iformat == 1 ? 'f' : iformat == 2 ? 'e' : 'g'));
-		// snprintf (formatString, 40, "%%%d.%d%c", width, precision, iformat == 1 ? 'f' : iformat == 2 ? 'e' : 'g');
-		// snprintf (buffer, 40, formatString, value);
+		fmt_snprintf (formatString, 40, "%%%d.%d%c", width, precision, iformat == 1 ? 'f' : iformat == 2 ? 'e' : 'g');
+		fmt_snprintf (buffer, 40, formatString, value);
 	}
 }
 

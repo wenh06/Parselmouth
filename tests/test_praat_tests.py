@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2020  Yannick Jadoul
+# Copyright (C) 2019-2021  Yannick Jadoul
 #
 # This file is part of Parselmouth.
 #
@@ -19,10 +19,7 @@ import pytest
 
 import parselmouth
 
-try:
-	import glob2 as glob  # Python 2 compatibility
-except ImportError:
-	import glob
+import glob
 import os
 import sys
 

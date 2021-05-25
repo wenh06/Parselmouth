@@ -69,7 +69,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Parselmouth'
-copyright = '2017-2020, Yannick Jadoul'
+copyright = '2017-2021, Yannick Jadoul'
 author = 'Yannick Jadoul'
 
 if on_rtd:
@@ -89,8 +89,6 @@ if on_rtd:
         assert len(zf.namelist()) == 1
         zf.extractall(tmpdir)
         subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--force-reinstall', tmpdir + '/' + zf.namelist()[0]])
-else:
-    sys.path.insert(0, os.path.abspath(os.path.join('..', 'installed')))
 
 import parselmouth
 
@@ -126,13 +124,17 @@ autodoc_member_order = 'groupwise'
 
 # Intersphinx configuration
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
-                       'numpy': ('https://docs.scipy.org/doc/numpy', None),
-                       'tgt': ('https://textgridtools.readthedocs.io/en/stable', None)}
+                       'numpy': ('https://numpy.org/doc/stable/', None),
+                       'tgt': ('https://textgridtools.readthedocs.io/en/stable/', None)}
 
 default_role = 'py:obj'
 nitpicky = True
 nitpick_ignore = [('py:class', 'pybind11_builtins.pybind11_object'),
                   ('py:class', 'List'),
+                  ('py:class', 'Positive'),
+                  ('py:class', 'NonNegative'),
+                  ('py:class', 'numpy.float64'),
+                  ('py:class', 'numpy.complex128'),
                   ('py:obj', 'List')]
 
 
@@ -148,7 +150,7 @@ rst_epilog = """
 """.format(branch_or_tag=branch_or_tag)
 
 nbsphinx_prolog = """
-{{% set docname = env.doc2path(env.docname, base='docs') %}}
+{{% set docname = 'docs/' + env.doc2path(env.docname, base=False) %}}
 
 .. only:: html
 
@@ -162,7 +164,7 @@ nbsphinx_prolog = """
 
 
 def setup(app):
-    app.add_stylesheet('css/custom.css')
+    app.add_css_file('css/custom.css')
 
 
 # -- Options for HTML output ----------------------------------------------
